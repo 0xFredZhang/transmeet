@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TransMeet - 会议翻译</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body class="bg-gray-900 min-h-screen">
+    <div class="container mx-auto px-4 py-4">
+        <header class="flex justify-between items-center mb-4">
+            <div class="flex items-center">
+                <a href="index.html" class="text-white hover:text-gray-300 mr-4">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                </a>
+                <h1 class="text-2xl font-bold text-white">TransMeet 会议翻译</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center text-white">
+                    <span class="mr-2">状态:</span>
+                    <span id="status" class="px-2 py-1 bg-green-600 rounded text-sm">就绪</span>
+                </div>
+                <button onclick="openSettings()" class="text-white hover:text-gray-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="grid lg:grid-cols-3 gap-4">
+            <!-- 主视频/字幕区域 -->
+            <div class="lg:col-span-2">
+                <div class="bg-gray-800 rounded-lg p-4 h-96 flex items-center justify-center mb-4">
+                    <div class="text-center text-gray-400">
+                        <svg class="w-24 h-24 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                        <p>会议视频区域</p>
+                        <p class="text-sm mt-2">实际使用时将显示会议内容</p>
+                    </div>
+                </div>
+
+                <!-- 字幕显示区域 -->
+                <div class="bg-gray-800 rounded-lg p-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-white font-semibold">实时字幕</h3>
+                        <div class="flex space-x-2">
+                            <button onclick="clearSubtitles()" class="text-gray-400 hover:text-white text-sm">清空</button>
+                            <button onclick="exportSubtitles()" class="text-gray-400 hover:text-white text-sm">导出</button>
+                        </div>
+                    </div>
+                    <div id="subtitles" class="h-48 overflow-y-auto space-y-3 custom-scrollbar">
+                        <!-- 字幕将在这里显示 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 控制面板 -->
+            <div class="space-y-4">
+                <!-- 音频输入选择 -->
+                <div class="bg-gray-800 rounded-lg p-4">
+                    <h3 class="text-white font-semibold mb-3">音频输入模式</h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center text-white">
+                            <input type="radio" name="audioMode" value="microphone" checked class="mr-2">
+                            <span>麦克风（我方发言）</span>
+                        </label>
+                        <label class="flex items-center text-white">
+                            <input type="radio" name="audioMode" value="system" class="mr-2">
+                            <span>系统音频（对方发言）</span>
+                        </label>
+                        <label class="flex items-center text-white">
+                            <input type="radio" name="audioMode" value="manual" class="mr-2">
+                            <span>手动输入（测试模式）</span>
+                        </label>
+                    </div>
+                    <div id="audioModeHelp" class="mt-2 text-xs text-gray-400">
+                        提示：系统音频捕获需要屏幕共享权限
+                    </div>
+                </div>
+
+                <!-- 语言设置 -->
+                <div class="bg-gray-800 rounded-lg p-4">
+                    <h3 class="text-white font-semibold mb-3">语言设置</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-gray-400 text-sm">源语言</label>
+                            <select id="sourceLang" class="w-full mt-1 bg-gray-700 text-white rounded px-3 py-2">
+                                <option value="en-US">English</option>
+                                <option value="zh-CN" selected>中文</option>
+                                <option value="ja-JP">日本語</option>
+                                <option value="ko-KR">한국어</option>
+                                <option value="es-ES">Español</option>
+                                <option value="fr-FR">Français</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-gray-400 text-sm">目标语言</label>
+                            <select id="targetLang" class="w-full mt-1 bg-gray-700 text-white rounded px-3 py-2">
+                                <option value="en-US" selected>English</option>
+                                <option value="zh-CN">中文</option>
+                                <option value="ja-JP">日本語</option>
+                                <option value="ko-KR">한국어</option>
+                                <option value="es-ES">Español</option>
+                                <option value="fr-FR">Français</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 我方发言控制 -->
+                <div class="bg-gray-800 rounded-lg p-4">
+                    <h3 class="text-white font-semibold mb-3">语音控制</h3>
+                    <button id="speakBtn" onclick="toggleSpeak()" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg flex items-center justify-center space-x-2 transition-colors mb-3">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                        </svg>
+                        <span id="speakBtnText">开始录音</span>
+                    </button>
+                    
+                    <!-- 系统音频捕获按钮 -->
+                    <button id="systemAudioBtn" onclick="toggleSystemAudio()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg flex items-center justify-center space-x-2 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        <span id="systemAudioBtnText">捕获系统音频</span>
+                    </button>
+                    
+                    <div id="speakingIndicator" class="mt-3 hidden">
+                        <div class="flex items-center text-green-400">
+                            <div class="animate-pulse mr-2">
+                                <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                            </div>
+                            <span id="recordingStatus">正在录音...</span>
+                        </div>
+                    </div>
+                    <div id="recognizedText" class="mt-3 p-2 bg-gray-700 rounded text-white text-sm min-h-[60px] hidden">
+                        <!-- 识别的文字将在这里显示 -->
+                    </div>
+                </div>
+
+                <!-- 功能控制 -->
+                <div class="bg-gray-800 rounded-lg p-4">
+                    <h3 class="text-white font-semibold mb-3">功能控制</h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center text-white">
+                            <input type="checkbox" id="autoTranslate" checked class="mr-2">
+                            <span>自动翻译</span>
+                        </label>
+                        <label class="flex items-center text-white">
+                            <input type="checkbox" id="autoSpeak" checked class="mr-2">
+                            <span>自动朗读译文</span>
+                        </label>
+                        <label class="flex items-center text-white">
+                            <input type="checkbox" id="saveHistory" checked class="mr-2">
+                            <span>保存历史记录</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 模拟字幕输入 -->
+                <div class="bg-gray-800 rounded-lg p-4">
+                    <h3 class="text-white font-semibold mb-3">模拟字幕输入</h3>
+                    <textarea id="simulateInput" class="w-full bg-gray-700 text-white rounded px-3 py-2 h-20 text-sm" 
+                        placeholder="输入模拟字幕文本（用于测试翻译功能）..."></textarea>
+                    <div class="flex space-x-2 mt-2">
+                        <button onclick="simulateSubtitle()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded transition-colors">
+                            发送字幕
+                        </button>
+                        <button onclick="startAutoSimulation()" id="autoSimBtn" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded transition-colors">
+                            自动模拟
+                        </button>
+                    </div>
+                    <div class="mt-2 text-xs text-gray-400">
+                        提示：可用于测试翻译功能，模拟对方说话的字幕
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/app.js"></script>
+    <script>
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initMeeting();
+            
+            // 添加自动开始捕获选项
+            const settings = JSON.parse(localStorage.getItem('transmeet_settings') || '{}');
+            if (settings.autoStartCapture) {
+                setTimeout(() => {
+                    // 自动开始系统音频捕获
+                    const audioMode = document.querySelector('input[name="audioMode"]:checked')?.value;
+                    if (audioMode === 'system') {
+                        console.log('自动开始系统音频捕获...');
+                        // 注意：由于浏览器安全限制，需要用户交互才能开始屏幕共享
+                        // 这里只是提示用户
+                        if (confirm('是否立即开始捕获系统音频？')) {
+                            toggleSystemAudio();
+                        }
+                    } else if (audioMode === 'manual') {
+                        // 自动开始模拟
+                        console.log('自动开始模拟字幕...');
+                        startAutoSimulation();
+                    }
+                }, 1000);
+            }
+        });
+
+        function initMeeting() {
+            // 加载设置
+            const settings = JSON.parse(localStorage.getItem('transmeet_settings') || '{}');
+            
+            // 如果是演示模式或未配置服务，不需要检查API密钥
+            // 如果是AWS，需要检查AWS凭证
+            if (settings.translationService === 'aws') {
+                if (!settings.awsAccessKeyId || !settings.awsSecretAccessKey) {
+                    if (confirm('请先配置AWS凭证')) {
+                        window.location.href = 'settings.html';
+                    }
+                }
+            } else if (settings.translationService !== 'demo' && settings.translationService && !settings.apiKey) {
+                if (confirm('请先配置API密钥')) {
+                    window.location.href = 'settings.html';
+                }
+            }
+            
+            // 设置语言
+            if (settings.sourceLang) {
+                document.getElementById('sourceLang').value = settings.sourceLang;
+            }
+            if (settings.targetLang) {
+                document.getElementById('targetLang').value = settings.targetLang;
+            }
+
+            // 初始化语音识别
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                window.recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                window.recognition.continuous = true;
+                window.recognition.interimResults = true;
+                window.recognition.lang = document.getElementById('sourceLang').value;
+                
+                window.recognition.onresult = handleSpeechResult;
+                window.recognition.onerror = handleSpeechError;
+            }
+        }
+
+        let isRecording = false;
+        function toggleSpeak() {
+            if (!window.recognition) {
+                alert('您的浏览器不支持语音识别');
+                return;
+            }
+
+            const btn = document.getElementById('speakBtn');
+            const btnText = document.getElementById('speakBtnText');
+            const indicator = document.getElementById('speakingIndicator');
+            const textBox = document.getElementById('recognizedText');
+
+            if (!isRecording) {
+                // 开始录音
+                window.recognition.lang = document.getElementById('sourceLang').value;
+                window.recognition.start();
+                isRecording = true;
+                btn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                btn.classList.add('bg-gray-600', 'hover:bg-gray-700');
+                btnText.textContent = '停止录音';
+                indicator.classList.remove('hidden');
+                textBox.classList.remove('hidden');
+                textBox.textContent = '等待语音输入...';
+                updateStatus('录音中', 'bg-red-600');
+            } else {
+                // 停止录音
+                window.recognition.stop();
+                isRecording = false;
+                btn.classList.remove('bg-gray-600', 'hover:bg-gray-700');
+                btn.classList.add('bg-red-600', 'hover:bg-red-700');
+                btnText.textContent = '开始录音';
+                indicator.classList.add('hidden');
+                updateStatus('就绪', 'bg-green-600');
+            }
+        }
+
+        function handleSpeechResult(event) {
+            let finalTranscript = '';
+            let interimTranscript = '';
+
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    finalTranscript += transcript;
+                } else {
+                    interimTranscript += transcript;
+                }
+            }
+
+            const textBox = document.getElementById('recognizedText');
+            textBox.textContent = finalTranscript + interimTranscript;
+
+            if (finalTranscript && document.getElementById('autoTranslate').checked) {
+                processTranslation(finalTranscript, 'user');
+            }
+        }
+
+        function handleSpeechError(event) {
+            console.error('语音识别错误:', event.error);
+            updateStatus('识别错误', 'bg-yellow-600');
+        }
+
+        async function processTranslation(text, speaker = 'other') {
+            const settings = JSON.parse(localStorage.getItem('transmeet_settings') || '{}');
+            const sourceLang = document.getElementById('sourceLang').value;
+            const targetLang = document.getElementById('targetLang').value;
+
+            // 演示模式不需要API密钥，AWS需要特殊的凭证
+            if (settings.translationService === 'aws') {
+                if (!settings.awsAccessKeyId || !settings.awsSecretAccessKey) {
+                    console.error('未配置AWS凭证');
+                    updateStatus('请配置AWS凭证', 'bg-yellow-600');
+                    return;
+                }
+            } else if (settings.translationService !== 'demo' && !settings.apiKey) {
+                console.error('未配置API密钥');
+                updateStatus('请配置API密钥', 'bg-yellow-600');
+                return;
+            }
+
+            updateStatus('翻译中', 'bg-blue-600');
+
+            try {
+                // 调用翻译API
+                const translation = await translateText(text, sourceLang, targetLang, settings);
+                
+                // 检查是否已经有这条字幕（用于更新翻译）
+                const subtitles = document.getElementById('subtitles');
+                const existingSubtitle = Array.from(subtitles.children).find(el => {
+                    const originalText = el.querySelector('.subtitle-original')?.textContent;
+                    return originalText === text;
+                });
+                
+                if (existingSubtitle) {
+                    // 更新已存在的字幕翻译
+                    const translationEl = existingSubtitle.querySelector('.subtitle-translation');
+                    if (translationEl) {
+                        translationEl.textContent = translation;
+                    }
+                } else {
+                    // 添加新字幕
+                    addSubtitle(text, translation, speaker);
+                }
+                
+                // 保存到历史
+                if (document.getElementById('saveHistory').checked) {
+                    saveToHistory(text, translation, sourceLang, targetLang);
+                }
+                
+                // 自动朗读
+                if (document.getElementById('autoSpeak').checked && translation) {
+                    speakText(translation, targetLang);
+                }
+
+                updateStatus('就绪', 'bg-green-600');
+            } catch (error) {
+                console.error('翻译错误:', error);
+                updateStatus('翻译失败', 'bg-red-600');
+            }
+        }
+
+        function addSubtitle(original, translation, speaker = 'other') {
+            const container = document.getElementById('subtitles');
+            const timestamp = new Date().toLocaleTimeString('zh-CN');
+            
+            const subtitleEl = document.createElement('div');
+            subtitleEl.className = 'subtitle-item bg-gray-700 rounded p-3 mb-2';
+            subtitleEl.innerHTML = `
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs text-gray-400">${timestamp}</span>
+                    <span class="text-xs px-2 py-1 rounded ${speaker === 'user' ? 'bg-blue-600 text-white' : 'bg-green-600 text-white'}">
+                        ${speaker === 'user' ? '我' : '对方'}
+                    </span>
+                </div>
+                <div class="subtitle-original text-white mb-1">${original}</div>
+                <div class="subtitle-translation text-yellow-400 text-sm">${translation || '翻译中...'}</div>
+            `;
+            
+            container.insertBefore(subtitleEl, container.firstChild);
+            
+            // 限制显示数量
+            while (container.children.length > 50) {
+                container.removeChild(container.lastChild);
+            }
+        }
+
+        function simulateSubtitle() {
+            const text = document.getElementById('simulateInput').value.trim();
+            if (!text) return;
+            
+            processTranslation(text, 'other');
+            document.getElementById('simulateInput').value = '';
+        }
+
+        function clearSubtitles() {
+            if (confirm('确定要清空所有字幕吗？')) {
+                document.getElementById('subtitles').innerHTML = '';
+            }
+        }
+
+        function exportSubtitles() {
+            const subtitles = document.querySelectorAll('.subtitle-item');
+            if (subtitles.length === 0) {
+                alert('没有字幕可导出');
+                return;
+            }
+
+            let content = 'TransMeet 字幕导出\n';
+            content += '=' .repeat(50) + '\n\n';
+
+            subtitles.forEach((item, index) => {
+                const timestamp = item.querySelector('.text-gray-400').textContent;
+                const speaker = item.querySelector('.bg-blue-600, .bg-green-600').textContent.trim();
+                const original = item.querySelectorAll('div')[2].textContent;
+                const translation = item.querySelectorAll('div')[3].textContent;
+                
+                content += `[${timestamp}] ${speaker}\n`;
+                content += `原文: ${original}\n`;
+                content += `译文: ${translation}\n`;
+                content += '-'.repeat(30) + '\n';
+            });
+
+            // 下载文件
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `transmeet_subtitles_${new Date().getTime()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function saveToHistory(original, translation, sourceLang, targetLang) {
+            const history = JSON.parse(localStorage.getItem('transmeet_history') || '[]');
+            history.unshift({
+                timestamp: new Date().toISOString(),
+                original,
+                translation,
+                sourceLang,
+                targetLang
+            });
+            
+            // 限制历史记录数量
+            if (history.length > 500) {
+                history.splice(500);
+            }
+            
+            localStorage.setItem('transmeet_history', JSON.stringify(history));
+        }
+
+        function updateStatus(text, bgClass) {
+            const status = document.getElementById('status');
+            status.textContent = text;
+            status.className = `px-2 py-1 rounded text-sm ${bgClass}`;
+        }
+
+        function openSettings() {
+            window.location.href = 'settings.html';
+        }
+
+        // 系统音频捕获功能
+        let systemAudioStream = null;
+        let mediaRecorder = null;
+        let audioContext = null;
+        let systemRecognition = null;
+        
+        async function toggleSystemAudio() {
+            const btn = document.getElementById('systemAudioBtn');
+            const btnText = document.getElementById('systemAudioBtnText');
+            const indicator = document.getElementById('speakingIndicator');
+            const recordingStatus = document.getElementById('recordingStatus');
+            
+            if (!systemAudioStream) {
+                try {
+                    // 请求屏幕共享以获取系统音频
+                    systemAudioStream = await navigator.mediaDevices.getDisplayMedia({
+                        audio: {
+                            echoCancellation: false,
+                            noiseSuppression: false,
+                            sampleRate: 44100
+                        },
+                        video: true // 需要视频权限才能获取音频
+                    });
+                    
+                    // 获取音频轨道
+                    const audioTracks = systemAudioStream.getAudioTracks();
+                    if (audioTracks.length === 0) {
+                        throw new Error('未能获取系统音频，请确保共享时选择了"共享系统音频"选项');
+                    }
+                    
+                    // 创建新的语音识别实例用于系统音频
+                    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                        systemRecognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                        systemRecognition.continuous = true;
+                        systemRecognition.interimResults = true;
+                        systemRecognition.lang = document.getElementById('sourceLang').value;
+                        
+                        systemRecognition.onresult = (event) => {
+                            handleSystemAudioResult(event);
+                        };
+                        
+                        systemRecognition.onerror = (event) => {
+                            console.error('系统音频识别错误:', event.error);
+                            // 自动重启识别
+                            if (event.error === 'no-speech' || event.error === 'audio-capture') {
+                                setTimeout(() => {
+                                    if (systemRecognition && systemAudioStream) {
+                                        try {
+                                            systemRecognition.start();
+                                        } catch (e) {
+                                            console.log('重启识别失败:', e);
+                                        }
+                                    }
+                                }, 1000);
+                            }
+                        };
+                        
+                        systemRecognition.onend = () => {
+                            // 如果流还在，自动重启识别
+                            if (systemAudioStream) {
+                                setTimeout(() => {
+                                    try {
+                                        systemRecognition.start();
+                                        console.log('语音识别已自动重启');
+                                    } catch (e) {
+                                        console.log('自动重启失败:', e);
+                                    }
+                                }, 100);
+                            }
+                        };
+                        
+                        // 自动开始识别
+                        systemRecognition.start();
+                        console.log('系统音频识别已自动启动');
+                    }
+                    
+                    btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                    btn.classList.add('bg-green-600', 'hover:bg-green-700');
+                    btnText.textContent = '停止捕获';
+                    indicator.classList.remove('hidden');
+                    recordingStatus.textContent = '正在捕获系统音频...';
+                    updateStatus('捕获系统音频中', 'bg-blue-600');
+                    
+                    // 监听流结束事件
+                    systemAudioStream.getVideoTracks()[0].addEventListener('ended', () => {
+                        stopSystemAudio();
+                    });
+                    
+                } catch (error) {
+                    console.error('无法获取系统音频:', error);
+                    alert('无法获取系统音频。请确保：\n1. 使用Chrome/Edge浏览器\n2. 选择共享整个屏幕或标签页\n3. 勾选"共享系统音频"选项');
+                    updateStatus('获取音频失败', 'bg-red-600');
+                }
+            } else {
+                stopSystemAudio();
+            }
+        }
+        
+        function stopSystemAudio() {
+            if (systemAudioStream) {
+                systemAudioStream.getTracks().forEach(track => track.stop());
+                systemAudioStream = null;
+            }
+            if (systemRecognition) {
+                systemRecognition.stop();
+                systemRecognition = null;
+            }
+            
+            const btn = document.getElementById('systemAudioBtn');
+            const btnText = document.getElementById('systemAudioBtnText');
+            const indicator = document.getElementById('speakingIndicator');
+            
+            btn.classList.remove('bg-green-600', 'hover:bg-green-700');
+            btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            btnText.textContent = '捕获系统音频';
+            
+            // 只在没有麦克风录音时隐藏指示器
+            if (!isRecording) {
+                indicator.classList.add('hidden');
+            }
+            updateStatus('就绪', 'bg-green-600');
+        }
+        
+        function handleSystemAudioResult(event) {
+            let finalTranscript = '';
+            let interimTranscript = '';
+            
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    finalTranscript += transcript;
+                } else {
+                    interimTranscript += transcript;
+                }
+            }
+            
+            // 显示识别的文字（即使是临时结果）
+            if (finalTranscript || interimTranscript) {
+                const recognizedTextBox = document.getElementById('recognizedText');
+                recognizedTextBox.classList.remove('hidden');
+                recognizedTextBox.textContent = `识别到: ${finalTranscript + interimTranscript}`;
+                
+                // 如果是最终结果，添加到字幕并翻译
+                if (finalTranscript) {
+                    console.log('识别到文字:', finalTranscript);
+                    
+                    // 直接添加原文字幕（不等待翻译）
+                    addSubtitle(finalTranscript, '翻译中...', 'other');
+                    
+                    // 如果开启自动翻译，进行翻译
+                    if (document.getElementById('autoTranslate').checked) {
+                        processTranslation(finalTranscript, 'other');
+                    }
+                }
+            }
+        }
+        
+        // 自动模拟功能
+        let autoSimulationInterval = null;
+        const simulationTexts = [
+            "Hello everyone, welcome to today's meeting",
+            "Let's start with the project status update",
+            "We have made good progress this week",
+            "The development team has completed the main features",
+            "大家好，欢迎参加今天的会议",
+            "让我们开始讨论项目进展",
+            "本周我们取得了很好的进展",
+            "开发团队已经完成了主要功能",
+            "Next, we need to focus on testing",
+            "Please review the documentation",
+            "接下来我们需要专注于测试",
+            "请大家查看相关文档"
+        ];
+        let simulationIndex = 0;
+        
+        function startAutoSimulation() {
+            const btn = document.getElementById('autoSimBtn');
+            
+            if (!autoSimulationInterval) {
+                autoSimulationInterval = setInterval(() => {
+                    const text = simulationTexts[simulationIndex % simulationTexts.length];
+                    processTranslation(text, 'other');
+                    simulationIndex++;
+                }, 3000);
+                
+                btn.textContent = '停止模拟';
+                btn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                btn.classList.add('bg-red-600', 'hover:bg-red-700');
+                updateStatus('自动模拟中', 'bg-green-600');
+            } else {
+                clearInterval(autoSimulationInterval);
+                autoSimulationInterval = null;
+                btn.textContent = '自动模拟';
+                btn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                btn.classList.add('bg-green-600', 'hover:bg-green-700');
+                updateStatus('就绪', 'bg-green-600');
+            }
+        }
+
+        // 音频模式切换监听
+        document.addEventListener('DOMContentLoaded', function() {
+            const audioModeRadios = document.querySelectorAll('input[name="audioMode"]');
+            audioModeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const audioModeHelp = document.getElementById('audioModeHelp');
+                    switch(this.value) {
+                        case 'microphone':
+                            audioModeHelp.textContent = '提示：将捕获您的麦克风声音';
+                            break;
+                        case 'system':
+                            audioModeHelp.textContent = '提示：需要屏幕共享权限，并勾选"共享系统音频"';
+                            break;
+                        case 'manual':
+                            audioModeHelp.textContent = '提示：使用下方模拟字幕输入进行测试';
+                            break;
+                    }
+                });
+            });
+        });
+
+        // 语言切换监听
+        document.getElementById('sourceLang').addEventListener('change', function() {
+            if (window.recognition && isRecording) {
+                window.recognition.lang = this.value;
+            }
+        });
+    </script>
+</body>
+</html>

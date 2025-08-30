@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TransMeet - 实时会议翻译</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-12">
+            <h1 class="text-5xl font-bold text-indigo-800 mb-4">🌐 TransMeet</h1>
+            <p class="text-xl text-gray-700">实时双向会议翻译系统</p>
+            <p class="text-sm text-gray-600 mt-2">支持 Google Meet 等会议平台的实时语音识别、翻译和语音合成</p>
+        </header>
+
+        <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-6">
+            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                <div class="flex items-center mb-4">
+                    <svg class="w-8 h-8 text-indigo-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                    <h2 class="text-2xl font-semibold text-gray-800">会议模式</h2>
+                </div>
+                <p class="text-gray-600 mb-4">进入实时会议翻译界面，支持双语字幕显示、语音识别和TTS播放</p>
+                <a href="meeting.html" class="inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors">
+                    进入会议
+                </a>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                <div class="flex items-center mb-4">
+                    <svg class="w-8 h-8 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    <h2 class="text-2xl font-semibold text-gray-800">设置</h2>
+                </div>
+                <p class="text-gray-600 mb-4">配置API密钥、选择语言对、设置翻译引擎等</p>
+                <a href="settings.html" class="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+                    配置设置
+                </a>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                <div class="flex items-center mb-4">
+                    <svg class="w-8 h-8 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h2 class="text-2xl font-semibold text-gray-800">历史记录</h2>
+                </div>
+                <p class="text-gray-600 mb-4">查看翻译历史，导出为TXT或SRT格式</p>
+                <a href="history.html" class="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors">
+                    查看历史
+                </a>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                <div class="flex items-center mb-4">
+                    <svg class="w-8 h-8 text-orange-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                    </svg>
+                    <h2 class="text-2xl font-semibold text-gray-800">Chrome扩展</h2>
+                </div>
+                <p class="text-gray-600 mb-4">安装浏览器扩展，在Google Meet中直接使用</p>
+                <button onclick="showExtensionGuide()" class="inline-block bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors">
+                    安装指南
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-12 max-w-4xl mx-auto">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">✨ 功能特性</h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="flex items-start">
+                        <span class="text-green-500 mr-2">✓</span>
+                        <span class="text-gray-700">实时语音识别 (Web Speech API)</span>
+                    </div>
+                    <div class="flex items-start">
+                        <span class="text-green-500 mr-2">✓</span>
+                        <span class="text-gray-700">多语言翻译支持</span>
+                    </div>
+                    <div class="flex items-start">
+                        <span class="text-green-500 mr-2">✓</span>
+                        <span class="text-gray-700">语音合成播放 (TTS)</span>
+                    </div>
+                    <div class="flex items-start">
+                        <span class="text-green-500 mr-2">✓</span>
+                        <span class="text-gray-700">双语字幕显示</span>
+                    </div>
+                    <div class="flex items-start">
+                        <span class="text-green-500 mr-2">✓</span>
+                        <span class="text-gray-700">历史记录导出</span>
+                    </div>
+                    <div class="flex items-start">
+                        <span class="text-green-500 mr-2">✓</span>
+                        <span class="text-gray-700">Chrome扩展集成</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="extensionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+                <h3 class="text-xl font-semibold mb-4">Chrome扩展安装指南</h3>
+                <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                    <li>打开Chrome浏览器，进入 chrome://extensions/</li>
+                    <li>开启右上角"开发者模式"</li>
+                    <li>点击"加载已解压的扩展程序"</li>
+                    <li>选择 transmeet/extension 文件夹</li>
+                    <li>扩展安装完成后，打开 meet.google.com</li>
+                    <li>点击扩展图标配置翻译设置</li>
+                </ol>
+                <button onclick="closeExtensionGuide()" class="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
+                    关闭
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showExtensionGuide() {
+            document.getElementById('extensionModal').classList.remove('hidden');
+        }
+        
+        function closeExtensionGuide() {
+            document.getElementById('extensionModal').classList.add('hidden');
+        }
+
+        // 检查设置
+        const settings = JSON.parse(localStorage.getItem('transmeet_settings') || '{}');
+        // 只有在没有设置或者不是演示模式且没有API密钥时才提示
+        if (!settings.translationService) {
+            setTimeout(() => {
+                if (confirm('首次使用请先进行基本设置')) {
+                    window.location.href = 'settings.html';
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+我想开发一个名为 TransMeet 的真实可运行项目，目标：在 Google Meet 场景实现**双向实时翻译**（听懂对方并翻译为我的母语；我说母语并实时翻译输出对方语言）。  
+请生成一个可以 **本地直接运行并演示端到端功能** 的最小可行产品（MVP），要求全部在前端完成，不需要任何后端服务。  
+
+【总体要求】  
+1. 技术栈：前端静态页面 (HTML + Tailwind CSS + 原生 JS)。  
+2. 功能：直接在前端调用翻译/ASR/TTS API（例如 OpenAI、Google、DeepL、Web Speech API）。  
+3. 用户配置：提供设置界面，允许用户输入自己的 API Key（避免代码中硬编码 Key）。  
+4. 输出格式：必须给出完整的文件树和每个文件的完整源码，确保用户下载即可运行。  
+
+【核心功能（必须实现）】  
+A. **语音识别 (ASR)**  
+   - 优先使用浏览器 Web Speech API 的 SpeechRecognition。  
+   - 如果浏览器不支持，提供调用云端 ASR API 的占位代码（例如 fetch Whisper API），并在代码中写清楚替换位置。  
+
+B. **翻译 (MT)**  
+   - 使用前端 fetch 直接调用翻译 API（OpenAI / Google / DeepL 任一，给出示例）。  
+   - 提供语言切换（源语言、目标语言）。  
+   - 翻译结果在页面实时显示。  
+
+C. **语音合成 (TTS)**  
+   - 使用浏览器 Web Speech API 的 SpeechSynthesis 输出翻译后的目标语音。  
+   - 在代码中标注可替换为 Google Cloud TTS / Azure TTS 的位置。  
+
+D. **会议场景支持**  
+   - 提供一个 meeting.html 页面，模拟 Google Meet 字幕输入，实时翻译并显示双语字幕。  
+   - 提供“我方发言”按钮：采集麦克风音频 → 识别 → 翻译 → 显示 + 播放目标语音。  
+   - 提供“导出历史”按钮（保存为 txt/srt）。  
+
+E. **Chrome 扩展（最小原型）**  
+   - manifest.json (MV3)。  
+   - content.js 注入 meet.google.com，抓取字幕 DOM（如不可行，用模拟字幕流）。  
+   - popup.html：小窗 UI（输入 API Key、语言设置、开关翻译）。  
+   - content.js 直接调用翻译 API 并显示结果在注入的小窗中。  
+
+【文件结构】  
+/transmeet  
+  /assets  
+    styles.css  
+    app.js        # 核心逻辑 (ASR + Translate + TTS)  
+  /pages  
+    index.html    # 主入口（产品说明、进入会议）  
+    meeting.html  # 会中界面：双语字幕、我方发言、TTS  
+    settings.html # 用户配置：API Key、语言、翻译服务选择  
+    history.html  # 历史记录 + 导出 txt/srt  
+  /extension  
+    manifest.json  
+    content.js  
+    popup.html  
+    styles.css  
+  README.md  
+
+【交互要求】  
+1. meeting.html：实时显示“原文字幕 + 翻译字幕”，带时间戳。  
+2. 我方发言：按下按钮开始录音 → 实时显示识别文字 → 调用翻译 API → 播放译文语音。  
+3. 设置页：API Key 管理、源/目标语言切换、翻译引擎选择。  
+4. 历史记录：本地存储 (localStorage/IndexedDB)，可导出。  
+5. Chrome 扩展：在 Meet 页面插入悬浮小窗，显示实时翻译结果。  
+
+【验收标准】  
+1. 下载代码后，双击 index.html 即可本地运行。  
+2. 用户输入 API Key 后，可在 meeting.html 演示：  
+   - 录音识别 → 翻译 → 显示 → 播放 TTS。  
+   - 模拟字幕流 → 翻译 → 显示双语字幕。  
+3. Chrome 扩展可本地加载，打开 meet.google.com 后出现小窗，显示伪字幕 + 翻译字幕。  
+4. README.md 写明运行方法、如何配置 API Key、如何替换真实 API（OpenAI/Google/DeepL/Whisper/TTS）。  
+
+请生成：完整文件树 + 每个文件的完整源码 + README。  
+重点是 **真实可运行**（不是原型图）。  

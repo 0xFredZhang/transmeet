@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TransMeet - 设置</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <header class="flex items-center mb-8">
+            <a href="index.html" class="mr-4 text-indigo-600 hover:text-indigo-800">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+            </a>
+            <h1 class="text-3xl font-bold text-indigo-800">设置</h1>
+        </header>
+
+        <div class="space-y-6">
+            <!-- API配置 -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                    </svg>
+                    API 配置
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">翻译服务</label>
+                        <select id="translationService" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="openai">OpenAI</option>
+                            <option value="google">Google Translate</option>
+                            <option value="deepl">DeepL</option>
+                            <option value="aws">AWS Translate</option>
+                            <option value="demo">演示模式（无需API）</option>
+                        </select>
+                    </div>
+
+                    <div id="apiKeySection">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">API密钥</label>
+                        <div class="relative">
+                            <input type="password" id="apiKey" placeholder="请输入API密钥" 
+                                class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <button onclick="toggleApiKeyVisibility()" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                                <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="mt-2 text-sm text-gray-500">
+                            <span id="apiHelp">获取OpenAI API密钥：访问 platform.openai.com</span>
+                        </p>
+                    </div>
+
+                    <div id="apiEndpointSection" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">API端点（可选）</label>
+                        <input type="text" id="apiEndpoint" placeholder="默认使用官方端点" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+
+                    <!-- AWS专用配置 -->
+                    <div id="awsSection" class="hidden space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">AWS Access Key ID</label>
+                            <input type="text" id="awsAccessKeyId" placeholder="输入AWS Access Key ID" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">AWS Secret Access Key</label>
+                            <input type="password" id="awsSecretAccessKey" placeholder="输入AWS Secret Access Key" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">AWS Region</label>
+                            <select id="awsRegion" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <!-- 美国区域 -->
+                                <optgroup label="美国">
+                                    <option value="us-east-1">US East (N. Virginia)</option>
+                                    <option value="us-east-2">US East (Ohio)</option>
+                                    <option value="us-west-1">US West (N. California)</option>
+                                    <option value="us-west-2">US West (Oregon)</option>
+                                </optgroup>
+                                <!-- 欧洲区域 -->
+                                <optgroup label="欧洲">
+                                    <option value="eu-west-1">EU (Ireland)</option>
+                                    <option value="eu-west-2">EU (London)</option>
+                                    <option value="eu-west-3">EU (Paris)</option>
+                                    <option value="eu-central-1">EU (Frankfurt)</option>
+                                    <option value="eu-central-2">EU (Zurich)</option>
+                                    <option value="eu-north-1">EU (Stockholm)</option>
+                                    <option value="eu-south-1">EU (Milan)</option>
+                                    <option value="eu-south-2">EU (Spain)</option>
+                                </optgroup>
+                                <!-- 亚太区域 -->
+                                <optgroup label="亚太">
+                                    <option value="ap-northeast-1">Asia Pacific (Tokyo)</option>
+                                    <option value="ap-northeast-2">Asia Pacific (Seoul)</option>
+                                    <option value="ap-northeast-3">Asia Pacific (Osaka)</option>
+                                    <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
+                                    <option value="ap-southeast-2">Asia Pacific (Sydney)</option>
+                                    <option value="ap-southeast-3">Asia Pacific (Jakarta)</option>
+                                    <option value="ap-southeast-4">Asia Pacific (Melbourne)</option>
+                                    <option value="ap-south-1">Asia Pacific (Mumbai)</option>
+                                    <option value="ap-south-2">Asia Pacific (Hyderabad)</option>
+                                    <option value="ap-east-1">Asia Pacific (Hong Kong)</option>
+                                </optgroup>
+                                <!-- 中国区域 -->
+                                <optgroup label="中国">
+                                    <option value="cn-north-1">China (Beijing)</option>
+                                    <option value="cn-northwest-1">China (Ningxia)</option>
+                                </optgroup>
+                                <!-- 其他区域 -->
+                                <optgroup label="其他">
+                                    <option value="ca-central-1">Canada (Central)</option>
+                                    <option value="ca-west-1">Canada West (Calgary)</option>
+                                    <option value="sa-east-1">South America (São Paulo)</option>
+                                    <option value="me-south-1">Middle East (Bahrain)</option>
+                                    <option value="me-central-1">Middle East (UAE)</option>
+                                    <option value="af-south-1">Africa (Cape Town)</option>
+                                    <option value="il-central-1">Israel (Tel Aviv)</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 语言设置 -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+                    </svg>
+                    语言设置
+                </h2>
+                
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">默认源语言</label>
+                        <select id="sourceLang" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="zh-CN">中文（简体）</option>
+                            <option value="zh-TW">中文（繁体）</option>
+                            <option value="en-US">English (US)</option>
+                            <option value="en-GB">English (UK)</option>
+                            <option value="ja-JP">日本語</option>
+                            <option value="ko-KR">한국어</option>
+                            <option value="es-ES">Español</option>
+                            <option value="fr-FR">Français</option>
+                            <option value="de-DE">Deutsch</option>
+                            <option value="ru-RU">Русский</option>
+                            <option value="pt-BR">Português</option>
+                            <option value="it-IT">Italiano</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">默认目标语言</label>
+                        <select id="targetLang" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="en-US">English (US)</option>
+                            <option value="zh-CN">中文（简体）</option>
+                            <option value="zh-TW">中文（繁体）</option>
+                            <option value="en-GB">English (UK)</option>
+                            <option value="ja-JP">日本語</option>
+                            <option value="ko-KR">한국어</option>
+                            <option value="es-ES">Español</option>
+                            <option value="fr-FR">Français</option>
+                            <option value="de-DE">Deutsch</option>
+                            <option value="ru-RU">Русский</option>
+                            <option value="pt-BR">Português</option>
+                            <option value="it-IT">Italiano</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 语音设置 -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                    </svg>
+                    语音设置
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">语音识别引擎</label>
+                        <select id="asrEngine" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="webspeech">浏览器Web Speech API（推荐）</option>
+                            <option value="whisper">OpenAI Whisper</option>
+                            <option value="google">Google Speech-to-Text</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">语音合成引擎</label>
+                        <select id="ttsEngine" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="webspeech">浏览器Web Speech API（推荐）</option>
+                            <option value="openai">OpenAI TTS</option>
+                            <option value="google">Google Text-to-Speech</option>
+                            <option value="azure">Azure Cognitive Services</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">语音速度</label>
+                        <input type="range" id="speechRate" min="0.5" max="2" step="0.1" value="1" 
+                            class="w-full">
+                        <div class="flex justify-between text-sm text-gray-500">
+                            <span>0.5x</span>
+                            <span id="speechRateValue">1.0x</span>
+                            <span>2.0x</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">音量</label>
+                        <input type="range" id="speechVolume" min="0" max="1" step="0.1" value="1" 
+                            class="w-full">
+                        <div class="flex justify-between text-sm text-gray-500">
+                            <span>静音</span>
+                            <span id="speechVolumeValue">100%</span>
+                            <span>最大</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 高级设置 -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                    </svg>
+                    高级设置
+                </h2>
+                
+                <div class="space-y-3">
+                    <label class="flex items-center">
+                        <input type="checkbox" id="autoSave" checked class="mr-2">
+                        <span class="text-gray-700">自动保存翻译历史</span>
+                    </label>
+                    
+                    <label class="flex items-center">
+                        <input type="checkbox" id="showTimestamp" checked class="mr-2">
+                        <span class="text-gray-700">显示时间戳</span>
+                    </label>
+                    
+                    <label class="flex items-center">
+                        <input type="checkbox" id="continuousRecognition" class="mr-2">
+                        <span class="text-gray-700">连续识别模式</span>
+                    </label>
+                    
+                    <label class="flex items-center">
+                        <input type="checkbox" id="debugMode" class="mr-2">
+                        <span class="text-gray-700">调试模式（控制台输出）</span>
+                    </label>
+                </div>
+
+                <div class="mt-4 pt-4 border-t">
+                    <button onclick="clearAllData()" class="text-red-600 hover:text-red-700 text-sm">
+                        清除所有数据
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 保存按钮 -->
+        <div class="mt-8 flex justify-end space-x-4">
+            <button onclick="resetSettings()" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                重置默认
+            </button>
+            <button onclick="saveSettings()" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                保存设置
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 加载设置
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+            setupEventListeners();
+        });
+
+        function loadSettings() {
+            const settings = JSON.parse(localStorage.getItem('transmeet_settings') || '{}');
+            
+            // API设置
+            if (settings.translationService) {
+                document.getElementById('translationService').value = settings.translationService;
+                updateApiHelp();
+            }
+            if (settings.apiKey) {
+                document.getElementById('apiKey').value = settings.apiKey;
+            }
+            if (settings.apiEndpoint) {
+                document.getElementById('apiEndpoint').value = settings.apiEndpoint;
+            }
+            
+            // AWS设置
+            if (settings.awsAccessKeyId) {
+                document.getElementById('awsAccessKeyId').value = settings.awsAccessKeyId;
+            }
+            if (settings.awsSecretAccessKey) {
+                document.getElementById('awsSecretAccessKey').value = settings.awsSecretAccessKey;
+            }
+            if (settings.awsRegion) {
+                document.getElementById('awsRegion').value = settings.awsRegion;
+            }
+            
+            // 语言设置
+            if (settings.sourceLang) {
+                document.getElementById('sourceLang').value = settings.sourceLang;
+            }
+            if (settings.targetLang) {
+                document.getElementById('targetLang').value = settings.targetLang;
+            }
+            
+            // 语音设置
+            if (settings.asrEngine) {
+                document.getElementById('asrEngine').value = settings.asrEngine;
+            }
+            if (settings.ttsEngine) {
+                document.getElementById('ttsEngine').value = settings.ttsEngine;
+            }
+            if (settings.speechRate) {
+                document.getElementById('speechRate').value = settings.speechRate;
+                updateSpeechRateDisplay();
+            }
+            if (settings.speechVolume) {
+                document.getElementById('speechVolume').value = settings.speechVolume;
+                updateSpeechVolumeDisplay();
+            }
+            
+            // 高级设置
+            document.getElementById('autoSave').checked = settings.autoSave !== false;
+            document.getElementById('showTimestamp').checked = settings.showTimestamp !== false;
+            document.getElementById('continuousRecognition').checked = settings.continuousRecognition === true;
+            document.getElementById('debugMode').checked = settings.debugMode === true;
+        }
+
+        function setupEventListeners() {
+            document.getElementById('translationService').addEventListener('change', updateApiHelp);
+            document.getElementById('speechRate').addEventListener('input', updateSpeechRateDisplay);
+            document.getElementById('speechVolume').addEventListener('input', updateSpeechVolumeDisplay);
+        }
+
+        function updateApiHelp() {
+            const service = document.getElementById('translationService').value;
+            const apiKeySection = document.getElementById('apiKeySection');
+            const awsSection = document.getElementById('awsSection');
+            const apiHelp = document.getElementById('apiHelp');
+            
+            // 隐藏所有特定服务的配置
+            awsSection.style.display = 'none';
+            
+            if (service === 'demo') {
+                apiKeySection.style.display = 'none';
+            } else if (service === 'aws') {
+                apiKeySection.style.display = 'none';
+                awsSection.style.display = 'block';
+            } else {
+                apiKeySection.style.display = 'block';
+                switch (service) {
+                    case 'openai':
+                        apiHelp.textContent = '获取OpenAI API密钥：访问 platform.openai.com';
+                        break;
+                    case 'google':
+                        apiHelp.textContent = '获取Google API密钥：访问 console.cloud.google.com';
+                        break;
+                    case 'deepl':
+                        apiHelp.textContent = '获取DeepL API密钥：访问 www.deepl.com/pro-api';
+                        break;
+                }
+            }
+        }
+
+        function updateSpeechRateDisplay() {
+            const value = document.getElementById('speechRate').value;
+            document.getElementById('speechRateValue').textContent = value + 'x';
+        }
+
+        function updateSpeechVolumeDisplay() {
+            const value = document.getElementById('speechVolume').value;
+            document.getElementById('speechVolumeValue').textContent = Math.round(value * 100) + '%';
+        }
+
+        function toggleApiKeyVisibility() {
+            const input = document.getElementById('apiKey');
+            const icon = document.getElementById('eyeIcon');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+                `;
+            } else {
+                input.type = 'password';
+                icon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                `;
+            }
+        }
+
+        function saveSettings() {
+            const settings = {
+                translationService: document.getElementById('translationService').value,
+                apiKey: document.getElementById('apiKey').value,
+                apiEndpoint: document.getElementById('apiEndpoint').value,
+                awsAccessKeyId: document.getElementById('awsAccessKeyId').value,
+                awsSecretAccessKey: document.getElementById('awsSecretAccessKey').value,
+                awsRegion: document.getElementById('awsRegion').value,
+                sourceLang: document.getElementById('sourceLang').value,
+                targetLang: document.getElementById('targetLang').value,
+                asrEngine: document.getElementById('asrEngine').value,
+                ttsEngine: document.getElementById('ttsEngine').value,
+                speechRate: parseFloat(document.getElementById('speechRate').value),
+                speechVolume: parseFloat(document.getElementById('speechVolume').value),
+                autoSave: document.getElementById('autoSave').checked,
+                showTimestamp: document.getElementById('showTimestamp').checked,
+                continuousRecognition: document.getElementById('continuousRecognition').checked,
+                debugMode: document.getElementById('debugMode').checked
+            };
+            
+            localStorage.setItem('transmeet_settings', JSON.stringify(settings));
+            alert('设置已保存');
+        }
+
+        function resetSettings() {
+            if (confirm('确定要重置所有设置为默认值吗？')) {
+                document.getElementById('translationService').value = 'demo';
+                document.getElementById('apiKey').value = '';
+                document.getElementById('apiEndpoint').value = '';
+                document.getElementById('awsAccessKeyId').value = '';
+                document.getElementById('awsSecretAccessKey').value = '';
+                document.getElementById('awsRegion').value = 'us-east-1';
+                document.getElementById('sourceLang').value = 'zh-CN';
+                document.getElementById('targetLang').value = 'en-US';
+                document.getElementById('asrEngine').value = 'webspeech';
+                document.getElementById('ttsEngine').value = 'webspeech';
+                document.getElementById('speechRate').value = 1;
+                document.getElementById('speechVolume').value = 1;
+                document.getElementById('autoSave').checked = true;
+                document.getElementById('showTimestamp').checked = true;
+                document.getElementById('continuousRecognition').checked = false;
+                document.getElementById('debugMode').checked = false;
+                
+                updateApiHelp();
+                updateSpeechRateDisplay();
+                updateSpeechVolumeDisplay();
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('确定要清除所有数据吗？这将删除所有设置和历史记录。')) {
+                localStorage.removeItem('transmeet_settings');
+                localStorage.removeItem('transmeet_history');
+                alert('所有数据已清除');
+                window.location.reload();
+            }
+        }
+    </script>
+</body>
+</html>

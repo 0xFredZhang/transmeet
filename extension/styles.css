@@ -1,0 +1,453 @@
+/* TransMeet Chrome Extension Styles */
+
+/* Popup样式 */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.extension-popup {
+    width: 400px;
+    min-height: 500px;
+}
+
+.popup-container {
+    background: white;
+    min-height: 100vh;
+}
+
+.popup-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+.popup-header h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.subtitle {
+    margin: 5px 0 0 0;
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+.popup-content {
+    padding: 15px;
+}
+
+/* 控制开关 */
+.control-section {
+    margin-bottom: 20px;
+}
+
+.toggle-container {
+    margin-bottom: 12px;
+}
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.toggle-label span:first-child {
+    font-size: 14px;
+    color: #333;
+}
+
+.toggle-label input[type="checkbox"] {
+    display: none;
+}
+
+.toggle-slider {
+    width: 44px;
+    height: 24px;
+    background: #ccc;
+    border-radius: 12px;
+    position: relative;
+    transition: background 0.3s;
+}
+
+.toggle-slider::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s;
+}
+
+.toggle-label input:checked + .toggle-slider {
+    background: #667eea;
+}
+
+.toggle-label input:checked + .toggle-slider::after {
+    transform: translateX(20px);
+}
+
+/* 语言设置 */
+.language-section {
+    margin-bottom: 20px;
+}
+
+.language-section h3 {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.language-selectors {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.language-group {
+    flex: 1;
+}
+
+.language-group label {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.language-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    background: white;
+    cursor: pointer;
+}
+
+.swap-button button {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #f0f0f0;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    margin-top: 15px;
+    transition: all 0.3s;
+}
+
+.swap-button button:hover {
+    background: #667eea;
+    color: white;
+    transform: rotate(180deg);
+}
+
+/* API设置 */
+.api-section {
+    margin-bottom: 20px;
+}
+
+.api-section h3 {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.api-section select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+.api-key-input {
+    display: flex;
+    gap: 5px;
+}
+
+.api-key-input input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.eye-button {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.eye-button:hover {
+    background: #f0f0f0;
+}
+
+/* 快捷操作 */
+.quick-actions {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.action-button {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    font-size: 12px;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.action-button:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+/* 统计信息 */
+.stats-section {
+    display: flex;
+    justify-content: space-around;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    display: block;
+    font-size: 24px;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.stat-label {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* 页脚 */
+.popup-footer {
+    padding: 15px;
+    text-align: center;
+    border-top: 1px solid #eee;
+    font-size: 12px;
+    color: #666;
+}
+
+.popup-footer a {
+    color: #667eea;
+    text-decoration: none;
+}
+
+.popup-footer a:hover {
+    text-decoration: underline;
+}
+
+.version {
+    color: #999;
+}
+
+/* Toast提示 */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #333;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 13px;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 1000;
+}
+
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+/* 悬浮窗样式（注入到Google Meet页面） */
+#transmeet-floating {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 350px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    z-index: 999999;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.transmeet-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 15px;
+    border-radius: 12px 12px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: move;
+    user-select: none;
+}
+
+.transmeet-title {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.transmeet-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.transmeet-controls button {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.transmeet-controls button:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.transmeet-content {
+    padding: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.transmeet-status {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    font-size: 13px;
+    color: #666;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.status-dot.online {
+    background: #10b981;
+    animation: pulse 2s infinite;
+}
+
+.status-dot.offline {
+    background: #ef4444;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.transmeet-languages {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.transmeet-languages select {
+    flex: 1;
+    padding: 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.lang-arrow {
+    color: #666;
+    font-size: 16px;
+}
+
+.transmeet-subtitles {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.transmeet-subtitle-item {
+    margin-bottom: 12px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 3px solid #667eea;
+}
+
+.subtitle-time {
+    font-size: 11px;
+    color: #999;
+    margin-bottom: 5px;
+}
+
+.subtitle-original {
+    font-size: 13px;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.subtitle-translation {
+    font-size: 13px;
+    color: #667eea;
+    font-weight: 500;
+}
+
+/* 滚动条美化 */
+.transmeet-subtitles::-webkit-scrollbar {
+    width: 6px;
+}
+
+.transmeet-subtitles::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.transmeet-subtitles::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.transmeet-subtitles::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}

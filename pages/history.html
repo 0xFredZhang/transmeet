@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TransMeet - 历史记录</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <header class="flex justify-between items-center mb-8">
+            <div class="flex items-center">
+                <a href="index.html" class="mr-4 text-indigo-600 hover:text-indigo-800">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                </a>
+                <h1 class="text-3xl font-bold text-indigo-800">翻译历史</h1>
+            </div>
+            <div class="flex space-x-2">
+                <button onclick="exportHistory('txt')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    导出TXT
+                </button>
+                <button onclick="exportHistory('srt')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 16h4m10 0h4"></path>
+                    </svg>
+                    导出SRT
+                </button>
+                <button onclick="clearHistory()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    清空历史
+                </button>
+            </div>
+        </header>
+
+        <!-- 筛选和搜索 -->
+        <div class="bg-white rounded-xl shadow-lg p-4 mb-6">
+            <div class="grid md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">搜索</label>
+                    <input type="text" id="searchInput" placeholder="搜索内容..." 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">源语言</label>
+                    <select id="filterSourceLang" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">全部</option>
+                        <option value="zh-CN">中文（简体）</option>
+                        <option value="en-US">English</option>
+                        <option value="ja-JP">日本語</option>
+                        <option value="ko-KR">한국어</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">目标语言</label>
+                    <select id="filterTargetLang" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">全部</option>
+                        <option value="en-US">English</option>
+                        <option value="zh-CN">中文（简体）</option>
+                        <option value="ja-JP">日本語</option>
+                        <option value="ko-KR">한국어</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">日期范围</label>
+                    <select id="filterDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">全部时间</option>
+                        <option value="today">今天</option>
+                        <option value="week">最近7天</option>
+                        <option value="month">最近30天</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 统计信息 -->
+        <div class="grid md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-lg shadow p-4">
+                <div class="text-2xl font-bold text-indigo-600" id="totalCount">0</div>
+                <div class="text-sm text-gray-600">总翻译数</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4">
+                <div class="text-2xl font-bold text-green-600" id="todayCount">0</div>
+                <div class="text-sm text-gray-600">今日翻译</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4">
+                <div class="text-2xl font-bold text-blue-600" id="langPairCount">0</div>
+                <div class="text-sm text-gray-600">语言对</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4">
+                <div class="text-2xl font-bold text-purple-600" id="charCount">0</div>
+                <div class="text-sm text-gray-600">总字符数</div>
+            </div>
+        </div>
+
+        <!-- 历史记录列表 -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div id="historyList" class="space-y-4">
+                <!-- 历史记录将在这里显示 -->
+            </div>
+            
+            <div id="emptyState" class="hidden text-center py-12">
+                <svg class="w-24 h-24 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <p class="text-gray-500 text-lg">暂无历史记录</p>
+                <p class="text-gray-400 text-sm mt-2">开始使用翻译功能后，历史记录将显示在这里</p>
+            </div>
+
+            <!-- 分页 -->
+            <div id="pagination" class="mt-6 flex justify-center space-x-2">
+                <!-- 分页按钮将在这里显示 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allHistory = [];
+        let filteredHistory = [];
+        let currentPage = 1;
+        const itemsPerPage = 20;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadHistory();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            document.getElementById('searchInput').addEventListener('input', filterHistory);
+            document.getElementById('filterSourceLang').addEventListener('change', filterHistory);
+            document.getElementById('filterTargetLang').addEventListener('change', filterHistory);
+            document.getElementById('filterDate').addEventListener('change', filterHistory);
+        }
+
+        function loadHistory() {
+            allHistory = JSON.parse(localStorage.getItem('transmeet_history') || '[]');
+            updateStatistics();
+            filterHistory();
+        }
+
+        function updateStatistics() {
+            const totalCount = allHistory.length;
+            const today = new Date().toDateString();
+            const todayCount = allHistory.filter(item => 
+                new Date(item.timestamp).toDateString() === today
+            ).length;
+            
+            const langPairs = new Set(allHistory.map(item => 
+                `${item.sourceLang}-${item.targetLang}`
+            ));
+            
+            const charCount = allHistory.reduce((sum, item) => 
+                sum + (item.original?.length || 0) + (item.translation?.length || 0), 0
+            );
+
+            document.getElementById('totalCount').textContent = totalCount.toLocaleString();
+            document.getElementById('todayCount').textContent = todayCount.toLocaleString();
+            document.getElementById('langPairCount').textContent = langPairs.size;
+            document.getElementById('charCount').textContent = charCount.toLocaleString();
+        }
+
+        function filterHistory() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const sourceLang = document.getElementById('filterSourceLang').value;
+            const targetLang = document.getElementById('filterTargetLang').value;
+            const dateFilter = document.getElementById('filterDate').value;
+
+            filteredHistory = allHistory.filter(item => {
+                // 搜索过滤
+                if (searchTerm && !item.original?.toLowerCase().includes(searchTerm) && 
+                    !item.translation?.toLowerCase().includes(searchTerm)) {
+                    return false;
+                }
+
+                // 语言过滤
+                if (sourceLang && item.sourceLang !== sourceLang) return false;
+                if (targetLang && item.targetLang !== targetLang) return false;
+
+                // 日期过滤
+                if (dateFilter) {
+                    const itemDate = new Date(item.timestamp);
+                    const now = new Date();
+                    
+                    switch (dateFilter) {
+                        case 'today':
+                            if (itemDate.toDateString() !== now.toDateString()) return false;
+                            break;
+                        case 'week':
+                            const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+                            if (itemDate < weekAgo) return false;
+                            break;
+                        case 'month':
+                            const monthAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
+                            if (itemDate < monthAgo) return false;
+                            break;
+                    }
+                }
+
+                return true;
+            });
+
+            currentPage = 1;
+            displayHistory();
+        }
+
+        function displayHistory() {
+            const historyList = document.getElementById('historyList');
+            const emptyState = document.getElementById('emptyState');
+
+            if (filteredHistory.length === 0) {
+                historyList.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageItems = filteredHistory.slice(startIndex, endIndex);
+
+            historyList.innerHTML = pageItems.map((item, index) => {
+                const date = new Date(item.timestamp);
+                const langMap = {
+                    'zh-CN': '中文',
+                    'en-US': 'English',
+                    'ja-JP': '日本語',
+                    'ko-KR': '한국어',
+                    'es-ES': 'Español',
+                    'fr-FR': 'Français'
+                };
+
+                return `
+                    <div class="border-b pb-4 last:border-b-0">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-sm text-gray-500">#${filteredHistory.length - startIndex - index}</span>
+                                <span class="text-sm text-gray-500">${date.toLocaleString('zh-CN')}</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                                    ${langMap[item.sourceLang] || item.sourceLang}
+                                </span>
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                                </svg>
+                                <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded">
+                                    ${langMap[item.targetLang] || item.targetLang}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <div class="text-xs text-gray-500 mb-1">原文</div>
+                                <div class="text-gray-800">${escapeHtml(item.original || '')}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500 mb-1">译文</div>
+                                <div class="text-gray-800">${escapeHtml(item.translation || '')}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            displayPagination();
+        }
+
+        function displayPagination() {
+            const totalPages = Math.ceil(filteredHistory.length / itemsPerPage);
+            if (totalPages <= 1) {
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+
+            let paginationHTML = '';
+
+            // 上一页
+            if (currentPage > 1) {
+                paginationHTML += `
+                    <button onclick="goToPage(${currentPage - 1})" class="px-3 py-1 bg-white border rounded hover:bg-gray-50">
+                        上一页
+                    </button>
+                `;
+            }
+
+            // 页码
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    paginationHTML += `
+                        <button onclick="goToPage(${i})" class="px-3 py-1 ${i === currentPage ? 'bg-indigo-600 text-white' : 'bg-white border hover:bg-gray-50'} rounded">
+                            ${i}
+                        </button>
+                    `;
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    paginationHTML += '<span class="px-2">...</span>';
+                }
+            }
+
+            // 下一页
+            if (currentPage < totalPages) {
+                paginationHTML += `
+                    <button onclick="goToPage(${currentPage + 1})" class="px-3 py-1 bg-white border rounded hover:bg-gray-50">
+                        下一页
+                    </button>
+                `;
+            }
+
+            document.getElementById('pagination').innerHTML = paginationHTML;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            displayHistory();
+            window.scrollTo(0, 0);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function exportHistory(format) {
+            if (filteredHistory.length === 0) {
+                alert('没有历史记录可导出');
+                return;
+            }
+
+            let content = '';
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+
+            if (format === 'txt') {
+                content = 'TransMeet 翻译历史导出\n';
+                content += '导出时间: ' + new Date().toLocaleString('zh-CN') + '\n';
+                content += '=' .repeat(60) + '\n\n';
+
+                filteredHistory.forEach((item, index) => {
+                    const date = new Date(item.timestamp);
+                    content += `记录 #${index + 1}\n`;
+                    content += `时间: ${date.toLocaleString('zh-CN')}\n`;
+                    content += `语言: ${item.sourceLang} → ${item.targetLang}\n`;
+                    content += `原文: ${item.original}\n`;
+                    content += `译文: ${item.translation}\n`;
+                    content += '-'.repeat(40) + '\n\n';
+                });
+
+                downloadFile(content, `transmeet_history_${timestamp}.txt`, 'text/plain');
+            } else if (format === 'srt') {
+                filteredHistory.forEach((item, index) => {
+                    const startTime = formatSrtTime(index * 5);
+                    const endTime = formatSrtTime(index * 5 + 4);
+                    
+                    content += `${index + 1}\n`;
+                    content += `${startTime} --> ${endTime}\n`;
+                    content += `${item.original}\n`;
+                    content += `${item.translation}\n\n`;
+                });
+
+                downloadFile(content, `transmeet_subtitles_${timestamp}.srt`, 'text/plain');
+            }
+        }
+
+        function formatSrtTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')},000`;
+        }
+
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type: type + ';charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function clearHistory() {
+            if (confirm('确定要清空所有历史记录吗？此操作不可恢复。')) {
+                localStorage.removeItem('transmeet_history');
+                allHistory = [];
+                filteredHistory = [];
+                loadHistory();
+                alert('历史记录已清空');
+            }
+        }
+    </script>
+</body>
+</html>

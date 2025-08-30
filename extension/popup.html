@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TransMeet 设置</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="extension-popup">
+    <div class="popup-container">
+        <header class="popup-header">
+            <h1>🌐 TransMeet</h1>
+            <p class="subtitle">实时会议翻译助手</p>
+        </header>
+
+        <div class="popup-content">
+            <!-- 开关控制 -->
+            <div class="control-section">
+                <div class="toggle-container">
+                    <label class="toggle-label">
+                        <span>启用翻译</span>
+                        <input type="checkbox" id="enableTranslation" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="toggle-container">
+                    <label class="toggle-label">
+                        <span>显示悬浮窗</span>
+                        <input type="checkbox" id="showFloating" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="toggle-container">
+                    <label class="toggle-label">
+                        <span>自动翻译</span>
+                        <input type="checkbox" id="autoTranslate" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 语言设置 -->
+            <div class="language-section">
+                <h3>语言设置</h3>
+                <div class="language-selectors">
+                    <div class="language-group">
+                        <label>源语言</label>
+                        <select id="sourceLang">
+                            <option value="auto">自动检测</option>
+                            <option value="zh-CN" selected>中文（简体）</option>
+                            <option value="zh-TW">中文（繁体）</option>
+                            <option value="en-US">English (US)</option>
+                            <option value="ja-JP">日本語</option>
+                            <option value="ko-KR">한국어</option>
+                            <option value="es-ES">Español</option>
+                            <option value="fr-FR">Français</option>
+                        </select>
+                    </div>
+                    
+                    <div class="swap-button">
+                        <button id="swapLanguages" title="交换语言">⇄</button>
+                    </div>
+                    
+                    <div class="language-group">
+                        <label>目标语言</label>
+                        <select id="targetLang">
+                            <option value="en-US" selected>English (US)</option>
+                            <option value="zh-CN">中文（简体）</option>
+                            <option value="zh-TW">中文（繁体）</option>
+                            <option value="ja-JP">日本語</option>
+                            <option value="ko-KR">한국어</option>
+                            <option value="es-ES">Español</option>
+                            <option value="fr-FR">Français</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API设置 -->
+            <div class="api-section">
+                <h3>翻译服务</h3>
+                <select id="translationService">
+                    <option value="demo" selected>演示模式</option>
+                    <option value="openai">OpenAI</option>
+                    <option value="google">Google Translate</option>
+                    <option value="deepl">DeepL</option>
+                    <option value="aws">AWS Translate</option>
+                </select>
+                
+                <div id="apiKeyInput" class="api-key-input" style="display: none;">
+                    <input type="password" id="apiKey" placeholder="输入API密钥">
+                    <button id="showApiKey" class="eye-button">👁</button>
+                </div>
+            </div>
+
+            <!-- 快捷操作 -->
+            <div class="quick-actions">
+                <button id="openSettings" class="action-button">
+                    ⚙️ 高级设置
+                </button>
+                <button id="viewHistory" class="action-button">
+                    📋 查看历史
+                </button>
+                <button id="clearCache" class="action-button">
+                    🗑️ 清除缓存
+                </button>
+            </div>
+
+            <!-- 统计信息 -->
+            <div class="stats-section">
+                <div class="stat-item">
+                    <span class="stat-value" id="translationCount">0</span>
+                    <span class="stat-label">今日翻译</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="savedTime">0</span>
+                    <span class="stat-label">节省时间(分)</span>
+                </div>
+            </div>
+        </div>
+
+        <footer class="popup-footer">
+            <a href="#" id="helpLink">帮助</a>
+            <span>|</span>
+            <a href="#" id="feedbackLink">反馈</a>
+            <span>|</span>
+            <span class="version">v1.0.0</span>
+        </footer>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
