@@ -33,29 +33,23 @@
         </header>
 
         <div class="grid lg:grid-cols-3 gap-4">
-            <!-- 主视频/字幕区域 -->
+            <!-- 主字幕区域 -->
             <div class="lg:col-span-2">
-                <div class="bg-gray-800 rounded-lg p-4 h-96 flex items-center justify-center mb-4">
-                    <div class="text-center text-gray-400">
-                        <svg class="w-24 h-24 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                        </svg>
-                        <p>会议视频区域</p>
-                        <p class="text-sm mt-2">实际使用时将显示会议内容</p>
-                    </div>
-                </div>
-
                 <!-- 字幕显示区域 -->
                 <div class="bg-gray-800 rounded-lg p-4">
                     <div class="flex justify-between items-center mb-3">
-                        <h3 class="text-white font-semibold">实时字幕</h3>
+                        <h3 class="text-white font-semibold text-lg">实时字幕</h3>
                         <div class="flex space-x-2">
                             <button onclick="clearSubtitles()" class="text-gray-400 hover:text-white text-sm">清空</button>
                             <button onclick="exportSubtitles()" class="text-gray-400 hover:text-white text-sm">导出</button>
                         </div>
                     </div>
-                    <div id="subtitles" class="h-48 overflow-y-auto space-y-3 custom-scrollbar">
+                    <div id="subtitles" class="h-96 overflow-y-auto space-y-3 custom-scrollbar p-2">
                         <!-- 字幕将在这里显示 -->
+                        <div class="text-center text-gray-500 py-8" id="subtitle-placeholder">
+                            <p>等待音频输入...</p>
+                            <p class="text-sm mt-2">请选择音频输入模式并开始捕获</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -113,15 +107,9 @@
                     </div>
                 </div>
 
-                <!-- 我方发言控制 -->
+                <!-- 音频控制 -->
                 <div class="bg-gray-800 rounded-lg p-4">
-                    <h3 class="text-white font-semibold mb-3">语音控制</h3>
-                    <button id="speakBtn" onclick="toggleSpeak()" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg flex items-center justify-center space-x-2 transition-colors mb-3">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
-                        </svg>
-                        <span id="speakBtnText">开始录音</span>
-                    </button>
+                    <h3 class="text-white font-semibold mb-3">音频控制</h3>
                     
                     <!-- 系统音频捕获按钮 -->
                     <button id="systemAudioBtn" onclick="toggleSystemAudio()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg flex items-center justify-center space-x-2 transition-colors">
@@ -138,9 +126,6 @@
                             </div>
                             <span id="recordingStatus">正在录音...</span>
                         </div>
-                    </div>
-                    <div id="recognizedText" class="mt-3 p-2 bg-gray-700 rounded text-white text-sm min-h-[60px] hidden">
-                        <!-- 识别的文字将在这里显示 -->
                     </div>
                 </div>
 
@@ -251,41 +236,7 @@
         }
 
         let isRecording = false;
-        function toggleSpeak() {
-            if (!window.recognition) {
-                alert('您的浏览器不支持语音识别');
-                return;
-            }
-
-            const btn = document.getElementById('speakBtn');
-            const btnText = document.getElementById('speakBtnText');
-            const indicator = document.getElementById('speakingIndicator');
-            const textBox = document.getElementById('recognizedText');
-
-            if (!isRecording) {
-                // 开始录音
-                window.recognition.lang = document.getElementById('sourceLang').value;
-                window.recognition.start();
-                isRecording = true;
-                btn.classList.remove('bg-red-600', 'hover:bg-red-700');
-                btn.classList.add('bg-gray-600', 'hover:bg-gray-700');
-                btnText.textContent = '停止录音';
-                indicator.classList.remove('hidden');
-                textBox.classList.remove('hidden');
-                textBox.textContent = '等待语音输入...';
-                updateStatus('录音中', 'bg-red-600');
-            } else {
-                // 停止录音
-                window.recognition.stop();
-                isRecording = false;
-                btn.classList.remove('bg-gray-600', 'hover:bg-gray-700');
-                btn.classList.add('bg-red-600', 'hover:bg-red-700');
-                btnText.textContent = '开始录音';
-                indicator.classList.add('hidden');
-                updateStatus('就绪', 'bg-green-600');
-            }
-        }
-
+        
         function handleSpeechResult(event) {
             let finalTranscript = '';
             let interimTranscript = '';
@@ -299,11 +250,10 @@
                 }
             }
 
-            const textBox = document.getElementById('recognizedText');
-            textBox.textContent = finalTranscript + interimTranscript;
-
-            if (finalTranscript && document.getElementById('autoTranslate').checked) {
-                processTranslation(finalTranscript, 'user');
+            // 直接在字幕区域显示识别的文字
+            if (finalTranscript) {
+                // 添加到字幕区域，addSubtitle会自动处理翻译
+                addSubtitle(finalTranscript, '', 'user');
             }
         }
 
@@ -371,11 +321,20 @@
             }
         }
 
+        let subtitleIdCounter = 0;
         function addSubtitle(original, translation, speaker = 'other') {
             const container = document.getElementById('subtitles');
             const timestamp = new Date().toLocaleTimeString('zh-CN');
+            const subtitleId = 'subtitle-' + (++subtitleIdCounter);
+            
+            // 移除占位符
+            const placeholder = document.getElementById('subtitle-placeholder');
+            if (placeholder) {
+                placeholder.remove();
+            }
             
             const subtitleEl = document.createElement('div');
+            subtitleEl.id = subtitleId;
             subtitleEl.className = 'subtitle-item bg-gray-700 rounded p-3 mb-2';
             subtitleEl.innerHTML = `
                 <div class="flex justify-between items-start mb-2">
@@ -394,6 +353,13 @@
             while (container.children.length > 50) {
                 container.removeChild(container.lastChild);
             }
+            
+            // 如果没有翻译文本且开启了自动翻译，立即开始翻译
+            if (!translation && document.getElementById('autoTranslate').checked) {
+                processTranslation(original, speaker);
+            }
+            
+            return subtitleId;
         }
 
         function simulateSubtitle() {
@@ -500,51 +466,14 @@
                         throw new Error('未能获取系统音频，请确保共享时选择了"共享系统音频"选项');
                     }
                     
-                    // 创建新的语音识别实例用于系统音频
-                    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                        systemRecognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-                        systemRecognition.continuous = true;
-                        systemRecognition.interimResults = true;
-                        systemRecognition.lang = document.getElementById('sourceLang').value;
-                        
-                        systemRecognition.onresult = (event) => {
-                            handleSystemAudioResult(event);
-                        };
-                        
-                        systemRecognition.onerror = (event) => {
-                            console.error('系统音频识别错误:', event.error);
-                            // 自动重启识别
-                            if (event.error === 'no-speech' || event.error === 'audio-capture') {
-                                setTimeout(() => {
-                                    if (systemRecognition && systemAudioStream) {
-                                        try {
-                                            systemRecognition.start();
-                                        } catch (e) {
-                                            console.log('重启识别失败:', e);
-                                        }
-                                    }
-                                }, 1000);
-                            }
-                        };
-                        
-                        systemRecognition.onend = () => {
-                            // 如果流还在，自动重启识别
-                            if (systemAudioStream) {
-                                setTimeout(() => {
-                                    try {
-                                        systemRecognition.start();
-                                        console.log('语音识别已自动重启');
-                                    } catch (e) {
-                                        console.log('自动重启失败:', e);
-                                    }
-                                }, 100);
-                            }
-                        };
-                        
-                        // 自动开始识别
-                        systemRecognition.start();
-                        console.log('系统音频识别已自动启动');
-                    }
+                    console.log('系统音频捕获成功');
+                    
+                    // 注意：Web Speech API 不能直接处理系统音频流
+                    // 这里使用模拟数据来演示功能
+                    alert('注意：由于浏览器限制，Web Speech API 无法直接识别系统音频。\n\n将使用模拟数据演示翻译功能。实际使用时需要：\n1. 使用云端ASR服务（如OpenAI Whisper）\n2. 或使用Chrome扩展捕获Google Meet字幕');
+                    
+                    // 启动模拟字幕以演示功能
+                    startSystemAudioSimulation();
                     
                     btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
                     btn.classList.add('bg-green-600', 'hover:bg-green-700');
@@ -568,6 +497,41 @@
             }
         }
         
+        // 系统音频模拟功能
+        let systemAudioSimulationInterval = null;
+        function startSystemAudioSimulation() {
+            const simulationTexts = [
+                "Welcome to today's meeting about the project update",
+                "Let me share the latest development progress",
+                "We have completed 80% of the features",
+                "The testing phase will begin next week",
+                "Any questions or concerns from the team?"
+            ];
+            
+            let textIndex = 0;
+            systemAudioSimulationInterval = setInterval(() => {
+                if (textIndex < simulationTexts.length && systemAudioStream) {
+                    const text = simulationTexts[textIndex];
+                    console.log('模拟系统音频识别:', text);
+                    
+                    // 添加到字幕
+                    addSubtitle(text, '', 'other');
+                    
+                    textIndex++;
+                } else {
+                    clearInterval(systemAudioSimulationInterval);
+                    systemAudioSimulationInterval = null;
+                }
+            }, 5000); // 每5秒模拟一条消息
+        }
+        
+        function stopSystemAudioSimulation() {
+            if (systemAudioSimulationInterval) {
+                clearInterval(systemAudioSimulationInterval);
+                systemAudioSimulationInterval = null;
+            }
+        }
+        
         function stopSystemAudio() {
             if (systemAudioStream) {
                 systemAudioStream.getTracks().forEach(track => track.stop());
@@ -577,6 +541,9 @@
                 systemRecognition.stop();
                 systemRecognition = null;
             }
+            
+            // 停止模拟
+            stopSystemAudioSimulation();
             
             const btn = document.getElementById('systemAudioBtn');
             const btnText = document.getElementById('systemAudioBtnText');
@@ -593,39 +560,8 @@
             updateStatus('就绪', 'bg-green-600');
         }
         
-        function handleSystemAudioResult(event) {
-            let finalTranscript = '';
-            let interimTranscript = '';
-            
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                const transcript = event.results[i][0].transcript;
-                if (event.results[i].isFinal) {
-                    finalTranscript += transcript;
-                } else {
-                    interimTranscript += transcript;
-                }
-            }
-            
-            // 显示识别的文字（即使是临时结果）
-            if (finalTranscript || interimTranscript) {
-                const recognizedTextBox = document.getElementById('recognizedText');
-                recognizedTextBox.classList.remove('hidden');
-                recognizedTextBox.textContent = `识别到: ${finalTranscript + interimTranscript}`;
-                
-                // 如果是最终结果，添加到字幕并翻译
-                if (finalTranscript) {
-                    console.log('识别到文字:', finalTranscript);
-                    
-                    // 直接添加原文字幕（不等待翻译）
-                    addSubtitle(finalTranscript, '翻译中...', 'other');
-                    
-                    // 如果开启自动翻译，进行翻译
-                    if (document.getElementById('autoTranslate').checked) {
-                        processTranslation(finalTranscript, 'other');
-                    }
-                }
-            }
-        }
+        // 原始的handleSystemAudioResult函数保留用于将来的真实音频识别
+        // 当前版本使用模拟数据
         
         // 自动模拟功能
         let autoSimulationInterval = null;

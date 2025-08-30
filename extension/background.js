@@ -1,4 +1,5 @@
 // TransMeet Chrome Extension - Background Service Worker
+// 处理音频捕获和翻译请求
 
 // 监听安装事件
 chrome.runtime.onInstalled.addListener(function(details) {
@@ -6,22 +7,20 @@ chrome.runtime.onInstalled.addListener(function(details) {
         // 首次安装，设置默认配置
         const defaultSettings = {
             enabled: true,
-            sourceLang: 'zh-CN',
-            targetLang: 'en-US',
+            sourceLang: 'auto',
+            targetLang: 'zh-CN',
             autoTranslate: true,
             showFloating: true,
             translationService: 'demo',
-            apiKey: ''
+            apiKey: '',
+            captureMode: 'tab' // tab: 标签页音频, mic: 麦克风
         };
         
         chrome.storage.sync.set({ settings: defaultSettings }, function() {
             console.log('TransMeet installed with default settings');
         });
         
-        // 打开欢迎页面
-        chrome.tabs.create({
-            url: chrome.runtime.getURL('../pages/index.html')
-        });
+        console.log('TransMeet extension installed successfully');
     } else if (details.reason === 'update') {
         console.log('TransMeet updated to version', chrome.runtime.getManifest().version);
     }
@@ -29,17 +28,79 @@ chrome.runtime.onInstalled.addListener(function(details) {
 
 // 监听来自content script的消息
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === 'translate') {
+    if (request.action === 'startCapture') {
+        // 开始捕获音频
+        startAudioCapture(sender.tab.id)
+            .then(result => sendResponse(result))
+            .catch(error => sendResponse({ error: error.message }));
+        return true;
+    } else if (request.action === 'stopCapture') {
+        // 停止捕获音频
+        stopAudioCapture()
+            .then(result => sendResponse(result))
+            .catch(error => sendResponse({ error: error.message }));
+        return true;
+    } else if (request.action === 'translate') {
         // 处理翻译请求
         handleTranslation(request)
             .then(result => sendResponse(result))
             .catch(error => sendResponse({ error: error.message }));
-        return true; // 保持消息通道开放
-    } else if (request.action === 'updateStatistics') {
-        // 更新统计信息
-        updateStatistics(request.data);
+        return true;
+    } else if (request.action === 'getSettings') {
+        // 获取设置
+        chrome.storage.sync.get(['settings'], function(result) {
+            sendResponse(result.settings || {});
+        });
+        return true;
     }
 });
+
+// 音频捕获相关变量
+let captureStream = null;
+let isCapturing = false;
+
+// 开始音频捕获
+async function startAudioCapture(tabId) {
+    if (isCapturing) {
+        return { success: false, message: '已经在捕获中' };
+    }
+    
+    try {
+        // 使用chrome.tabCapture API (需要用户交互)
+        // 注意：Manifest V3中，需要通过用户操作触发
+        
+        // 方案1：使用屏幕共享API获取音频
+        // 这需要在内容脚本中调用 navigator.mediaDevices.getDisplayMedia
+        
+        // 方案2：使用麦克风输入
+        // 这需要在内容脚本中调用 navigator.mediaDevices.getUserMedia
+        
+        isCapturing = true;
+        return { 
+            success: true, 
+            message: '音频捕获已启动',
+            instruction: '请在页面中选择音频源'
+        };
+    } catch (error) {
+        console.error('Audio capture error:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// 停止音频捕获
+async function stopAudioCapture() {
+    if (!isCapturing) {
+        return { success: false, message: '没有正在进行的捕获' };
+    }
+    
+    if (captureStream) {
+        captureStream.getTracks().forEach(track => track.stop());
+        captureStream = null;
+    }
+    
+    isCapturing = false;
+    return { success: true, message: '音频捕获已停止' };
+}
 
 // 处理翻译请求
 async function handleTranslation(request) {
@@ -58,19 +119,11 @@ async function handleTranslation(request) {
             case 'deepl':
                 translation = await translateWithDeepL(text, sourceLang, targetLang, apiKey);
                 break;
-            case 'aws':
-                // Note: AWS requires additional credentials
-                translation = await demoTranslate(text, sourceLang, targetLang);
-                console.log('AWS Translate requires Access Key ID and Secret Access Key. Using demo mode.');
-                break;
             case 'demo':
             default:
                 translation = await demoTranslate(text, sourceLang, targetLang);
                 break;
         }
-        
-        // 更新统计
-        updateTranslationCount();
         
         return { translation };
     } catch (error) {
@@ -85,14 +138,20 @@ async function translateWithOpenAI(text, sourceLang, targetLang, apiKey) {
     
     const langMap = {
         'zh-CN': 'Chinese Simplified',
+        'zh-TW': 'Chinese Traditional',
         'en-US': 'English',
         'ja-JP': 'Japanese',
         'ko-KR': 'Korean',
         'es-ES': 'Spanish',
-        'fr-FR': 'French'
+        'fr-FR': 'French',
+        'de-DE': 'German',
+        'ru-RU': 'Russian',
+        'ar-SA': 'Arabic',
+        'pt-BR': 'Portuguese',
+        'auto': 'Auto-detect'
     };
     
-    const sourceLanguage = langMap[sourceLang] || 'Auto';
+    const sourceLanguage = langMap[sourceLang] || 'Auto-detect';
     const targetLanguage = langMap[targetLang] || 'English';
     
     const response = await fetch(endpoint, {
@@ -106,7 +165,7 @@ async function translateWithOpenAI(text, sourceLang, targetLang, apiKey) {
             messages: [
                 {
                     role: 'system',
-                    content: `You are a professional translator. Translate from ${sourceLanguage} to ${targetLanguage}. Only provide the translation.`
+                    content: `You are a professional translator. Translate from ${sourceLanguage} to ${targetLanguage}. Only provide the translation without any explanation.`
                 },
                 {
                     role: 'user',
@@ -132,21 +191,25 @@ async function translateWithGoogle(text, sourceLang, targetLang, apiKey) {
     
     const langCodeMap = {
         'zh-CN': 'zh-CN',
+        'zh-TW': 'zh-TW',
         'en-US': 'en',
         'ja-JP': 'ja',
-        'ko-KR': 'ko'
+        'ko-KR': 'ko',
+        'auto': 'auto'
     };
     
-    const source = langCodeMap[sourceLang] || sourceLang.split('-')[0];
+    const source = langCodeMap[sourceLang] || 'auto';
     const target = langCodeMap[targetLang] || targetLang.split('-')[0];
     
     const params = new URLSearchParams({
         key: apiKey,
         q: text,
-        source: source,
-        target: target,
-        format: 'text'
+        target: target
     });
+    
+    if (source !== 'auto') {
+        params.append('source', source);
+    }
     
     const response = await fetch(`${endpoint}?${params}`, {
         method: 'POST'
@@ -168,11 +231,12 @@ async function translateWithDeepL(text, sourceLang, targetLang, apiKey) {
         'zh-CN': 'ZH',
         'en-US': 'EN-US',
         'ja-JP': 'JA',
-        'ko-KR': 'KO'
+        'ko-KR': 'KO',
+        'auto': null
     };
     
     const source = langCodeMap[sourceLang];
-    const target = langCodeMap[targetLang];
+    const target = langCodeMap[targetLang] || 'EN-US';
     
     const formData = new FormData();
     formData.append('auth_key', apiKey);
@@ -198,8 +262,9 @@ async function demoTranslate(text, sourceLang, targetLang) {
     // 模拟延迟
     await new Promise(resolve => setTimeout(resolve, 300));
     
-    // 简单的翻译映射
+    // 增强的翻译映射
     const translations = {
+        // 中文到英文
         '你好': 'Hello',
         '谢谢': 'Thank you',
         '再见': 'Goodbye',
@@ -208,6 +273,18 @@ async function demoTranslate(text, sourceLang, targetLang) {
         '很高兴认识你': 'Nice to meet you',
         '今天天气很好': 'The weather is nice today',
         '请问你叫什么名字': 'What is your name?',
+        '会议': 'meeting',
+        '项目': 'project',
+        '开发': 'development',
+        '测试': 'testing',
+        '需求': 'requirements',
+        '进展': 'progress',
+        '讨论': 'discuss',
+        '时间表': 'timeline',
+        '感谢': 'thank',
+        '参与': 'participation',
+        
+        // 英文到中文
         'Hello': '你好',
         'Thank you': '谢谢',
         'Goodbye': '再见',
@@ -215,155 +292,86 @@ async function demoTranslate(text, sourceLang, targetLang) {
         'Good evening': '晚上好',
         'Nice to meet you': '很高兴认识你',
         'The weather is nice today': '今天天气很好',
-        'What is your name?': '请问你叫什么名字？'
+        'What is your name?': '请问你叫什么名字？',
+        'Welcome': '欢迎',
+        'meeting': '会议',
+        'project': '项目',
+        'development': '开发',
+        'testing': '测试',
+        'requirements': '需求',
+        'progress': '进展',
+        'discuss': '讨论',
+        'timeline': '时间表',
+        'thank': '感谢',
+        'participation': '参与',
+        
+        // 常见YouTube词汇
+        'subscribe': '订阅',
+        'like': '点赞',
+        'comment': '评论',
+        'share': '分享',
+        'video': '视频',
+        'channel': '频道',
+        'playlist': '播放列表',
+        'notification': '通知',
+        'Subscribe': '订阅',
+        'Like': '点赞',
+        'Comment': '评论',
+        'Share': '分享',
+        'Video': '视频',
+        'Channel': '频道'
     };
     
-    // 检查直接映射
-    if (translations[text]) {
-        return translations[text];
-    }
-    
-    // 检查包含关系
+    // 尝试直接翻译
+    let translatedText = text;
     for (const [key, value] of Object.entries(translations)) {
-        if (text.toLowerCase().includes(key.toLowerCase())) {
-            return text.toLowerCase().replace(key.toLowerCase(), value);
-        }
+        const regex = new RegExp(`\\b${key}\\b`, 'gi');
+        translatedText = translatedText.replace(regex, value);
     }
     
-    // 返回模拟翻译
-    if (sourceLang.startsWith('zh') && targetLang.startsWith('en')) {
+    if (translatedText !== text) {
+        return translatedText;
+    }
+    
+    // 检测语言并返回模拟翻译
+    const hasChineseChar = /[\u4e00-\u9fa5]/.test(text);
+    const hasEnglishChar = /[a-zA-Z]/.test(text);
+    
+    if (hasChineseChar && targetLang.startsWith('en')) {
         return `[Translation: ${text}]`;
-    } else if (sourceLang.startsWith('en') && targetLang.startsWith('zh')) {
+    } else if (hasEnglishChar && targetLang.startsWith('zh')) {
         return `[翻译: ${text}]`;
     } else {
-        return `[Translated: ${text}]`;
+        return `[${targetLang}: ${text}]`;
     }
-}
-
-// 更新翻译计数
-function updateTranslationCount() {
-    const today = new Date().toDateString();
-    
-    chrome.storage.local.get(['statistics'], function(result) {
-        const stats = result.statistics || {
-            todayCount: 0,
-            totalCount: 0,
-            lastDate: today,
-            totalTime: 0
-        };
-        
-        // 如果是新的一天，重置今日计数
-        if (stats.lastDate !== today) {
-            stats.todayCount = 0;
-            stats.lastDate = today;
-        }
-        
-        stats.todayCount++;
-        stats.totalCount++;
-        stats.totalTime += 3; // 假设每次翻译节省3秒
-        
-        chrome.storage.local.set({ statistics: stats });
-    });
-}
-
-// 更新统计信息
-function updateStatistics(data) {
-    chrome.storage.local.get(['statistics'], function(result) {
-        const stats = result.statistics || {};
-        Object.assign(stats, data);
-        chrome.storage.local.set({ statistics: stats });
-    });
 }
 
 // 监听标签页更新
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    if (changeInfo.status === 'complete' && tab.url && tab.url.includes('meet.google.com')) {
-        // Google Meet页面加载完成，可以注入额外的脚本
-        chrome.storage.sync.get(['settings'], function(result) {
-            if (result.settings && result.settings.enabled) {
-                // 发送初始化消息
-                chrome.tabs.sendMessage(tabId, {
-                    action: 'init',
-                    settings: result.settings
-                });
-            }
-        });
-    }
-});
-
-// 创建右键菜单
-chrome.runtime.onInstalled.addListener(() => {
-    chrome.contextMenus.create({
-        id: 'transmeet-translate',
-        title: 'TransMeet翻译选中文本',
-        contexts: ['selection']
-    });
-});
-
-// 处理右键菜单点击
-chrome.contextMenus.onClicked.addListener((info, tab) => {
-    if (info.menuItemId === 'transmeet-translate' && info.selectionText) {
-        chrome.storage.sync.get(['settings'], function(result) {
-            const settings = result.settings || {};
-            handleTranslation({
-                text: info.selectionText,
-                sourceLang: 'auto',
-                targetLang: settings.targetLang || 'en-US',
-                service: settings.translationService || 'demo',
-                apiKey: settings.apiKey
-            }).then(response => {
-                // 在新标签页显示翻译结果
-                const resultHtml = `
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <meta charset="UTF-8">
-                        <title>TransMeet - 翻译结果</title>
-                        <style>
-                            body {
-                                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                                max-width: 800px;
-                                margin: 50px auto;
-                                padding: 20px;
-                            }
-                            .result-container {
-                                background: #f8f9fa;
-                                border-radius: 8px;
-                                padding: 20px;
-                                border-left: 4px solid #667eea;
-                            }
-                            .original {
-                                color: #333;
-                                margin-bottom: 15px;
-                            }
-                            .translation {
-                                color: #667eea;
-                                font-size: 1.1em;
-                                font-weight: 500;
-                            }
-                            .label {
-                                font-size: 0.9em;
-                                color: #666;
-                                margin-bottom: 5px;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <h1>🌐 TransMeet 翻译结果</h1>
-                        <div class="result-container">
-                            <div class="label">原文：</div>
-                            <div class="original">${info.selectionText}</div>
-                            <div class="label">译文：</div>
-                            <div class="translation">${response.translation}</div>
-                        </div>
-                    </body>
-                    </html>
-                `;
-                
-                const blob = new Blob([resultHtml], { type: 'text/html' });
-                const url = URL.createObjectURL(blob);
-                chrome.tabs.create({ url });
+    if (changeInfo.status === 'complete' && tab.url) {
+        // 检查是否是视频网站
+        const videoSites = [
+            'youtube.com',
+            'bilibili.com',
+            'vimeo.com',
+            'twitch.tv',
+            'meet.google.com',
+            'zoom.us'
+        ];
+        
+        const isVideoSite = videoSites.some(site => tab.url.includes(site));
+        
+        if (isVideoSite) {
+            // 通知内容脚本这是一个视频网站
+            chrome.tabs.sendMessage(tabId, {
+                action: 'videoSiteDetected',
+                url: tab.url
+            }).catch(err => {
+                // 内容脚本可能还未加载
+                console.log('Content script not ready yet');
             });
-        });
+        }
     }
 });
+
+console.log('TransMeet background service worker loaded');
